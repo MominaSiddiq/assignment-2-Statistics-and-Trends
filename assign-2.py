@@ -8,7 +8,6 @@ Created on Tue Nov 21 19:14:45 2023
 
 import pandas as pd
 #import stats as stats
-import numpy as np
 import matplotlib.pyplot as plt
 
 def read_data(filename, skip):
@@ -124,7 +123,7 @@ def line_plot(data, title):
 
     """
     # Selecting countries for plotting
-    selected_countries = ['Afghanistan', 'Bangladesh', 'China', 'United Kingdom', 'Pakistan', 
+    selected_countries = ['Bangladesh', 'China', 'United Kingdom', 'Pakistan', 
                           'Netherlands', 'United States', 'Portugal', 'South Asia', 'Qatar', 
                           'South Africa', 'Zimbabwe']
     
@@ -133,14 +132,14 @@ def line_plot(data, title):
     filtered_data = filtered_data.set_index('Country Name').loc[:, '2000' : '2014']
     
     # line-plot
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(8, 6))
     
     for countries in selected_countries:
         plt.plot(filtered_data.columns, filtered_data.loc[countries], label = countries)
         
     plt.xlabel('Years')
     plt.title(title)
-    plt.legend()
+    plt.legend(title='Countries', bbox_to_anchor=(1.05, 1), loc='upper left')  
     plt.show()
     
     
@@ -162,29 +161,32 @@ def bar_plot(data, title):
 
     """
     # Selecting countries for plotting
-    selected_countries = ['Afghanistan', 'Bangladesh', 'China', 'United Kingdom', 'Pakistan', 
+    selected_countries = ['Bangladesh', 'China', 'United Kingdom', 'Pakistan', 
                           'Netherlands', 'United States', 'Portugal', 'South Asia', 'Qatar', 
                           'South Africa', 'Zimbabwe']
     
     # Selectin the years from 2000-2014
-    selected_years = [str(year) for year in range(2000, 2015)] 
+    selected_years = [str(year) for year in range(2000, 2015, 2)] 
     
     # Filter the data for selective countries and years 2000 to 2014
     filtered_data = data[data['Country Name'].isin(selected_countries)][['Country Name'] + selected_years]
     filtered_data.set_index('Country Name', inplace = True)
     
-    # Multiple-Bar Graph
+    # Bar plot
     plt.figure(figsize=(10, 6))
     
-    bar_width = 0.2 # width of each bar
-    #countries = range(len(selected_countries))
+   # x-axis ticks for the countries
+    x = range(len(selected_countries))  
+    bar_width = 0.1  # Width of each bar
     
-    for i, years in enumerate(selected_years):
-        plt.bar([pos + i * bar_width for pos in selected_countries], filtered_data[years], width = bar_width,  label = years)
+    for i, year in enumerate(selected_years):
+        plt.bar([pos + i * bar_width for pos in x], filtered_data[year], width=bar_width, label=year, edgecolor = 'black')
+
         
     plt.xlabel('Countries')
     plt.title(title)
-    plt.legend()
+    plt.xticks([pos + (len(selected_years) - 1) * bar_width / 2 for pos in x], selected_countries, rotation = 45, ha = 'right')
+    plt.legend(loc='upper left')  
     plt.show()
     
     
@@ -222,11 +224,11 @@ def main():
     
     # titles for the bar plot
     egu_title = "Energy Use(Kg of oil equivalent per capita)"
-    #co2_title = "(kt)"
+    co2_title = "CO2 Emission(kt)"
     
     # calling the function for bar plots and passing arguments
     bar_plot(energy_use_data, egu_title)
-    #bar_plot(co2_emission_data, co2_title)
+    bar_plot(co2_emission_data, co2_title)
 
     
     
