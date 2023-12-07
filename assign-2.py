@@ -11,16 +11,25 @@ import stats as stats
 import matplotlib.pyplot as plt
 
 # giving the filenames path of choosen indicators
+"""
 elec_access = "electricity_access.csv"
 elec_power = "electric_power.csv"
 energy_use = "energy_use.csv"
 co2_emission = "CO2_emission.csv"
-
+"""
+filenames = {
+    "electricity_access.csv" : "elec_access",
+    "electric_power.csv" :  "elec_power",
+    "energy_use.csv" : "energy_use",
+    "CO2_emission.csv" : "co2_emission"
+    }
+    
 # Creating global variables
 selected_countries = {}
 start_year = 2000
 end_year = 2014
 selected_years = {}
+selected_data = {}
 
 
 def read_data(filename):
@@ -53,8 +62,6 @@ def read_data(filename):
     # Drop the unnecessary columns in the data 
     data.drop(columns = ['Country Code', 'Indicator Name', 'Indicator Code'], inplace=True)
     
-    print(data)
-    
     # taking the transpose
     transposed_data = data.T
     
@@ -81,17 +88,6 @@ def read_data(filename):
     # Removing any duplicated rows
     transposed_data = transposed_data[~transposed_data.index.duplicated(keep='first')]
    
-    #seperate DataFrame for countries as columns
-    #data = transposed_data.T
-    
-    # removing empty rows
-    #data.dropna(axis = 0, how = 'all', inplace = True)
-    
-    print(transposed_data)
-    #print(data)
-    
-    #transposed_data.to_csv("transpose_file.csv")
-    
     return data, transposed_data
 
 
@@ -103,19 +99,17 @@ def summary_statistics(data):
 
     Parameters
     ----------
-    indicator : data
+    data : pandas dataframe
+       The numerical data to analyze
 
     Returns
     -------
-    summary
+    summary_stats
+        summary of selected data.
 
     """
-    # Selecting data 
-    selected_data = data.loc[selected_years, selected_countries]
-    selected_data = selected_data.apply(pd.to_numeric, errors='coerce')
     
-    summary_stats = selected_data.describe()
-    print(summary_stats)
+    summary_stats = data.describe()
     
     return summary_stats 
 
@@ -123,25 +117,22 @@ def summary_statistics(data):
 
 def stats_methods(data):
     """
-    this function applies skewness and kurtosis methods .
+    applies skewness and kurtosis methods on different indicators.
 
     Parameters
     ----------
-    data : TYPE
-
+    data : pandas dataframe
+        The numerical data to analyze
     Returns
     -------
-    None.
+    skewness & kurtosis of selected data.
 
     """
-    #data.drop( = 'Year')
-    selected_data = data.loc[selected_years, selected_countries]
-    #selected_data.drop(columns = 'Year')
     
-    print("Skewness: ", stats.skew(selected_data))
-    print("Kurtosis: ", stats.kurtosis(selected_data))
+    skewness = stats.skew(data)
+    kurtosis = stats.kurtosis(data)
     
-    return 
+    return skewness, kurtosis
 
 
 # Visualization of data by plotting different graphs on it
@@ -228,29 +219,84 @@ def main():
     None.
 
     """
+    """
     elec_access_data, elec_access_trans = read_data(elec_access)
     elp_consume_data, elp_consume_trans = read_data(elec_power)
     energy_use_data, energy_use_trans = read_data(energy_use)
     co2_emission_data, co2_emission_trans = read_data(co2_emission)
+    """
+    # Creating dictionaries for original and transposed dataframes
+    country_col_df = {}
+    year_col_df = {}
+    
+    # Iterate through dataframes and store in dictionaries
+    for file, df_name in filenames.items():
+        original_df, transposed_df = read_data(file)
+        country_col_df[df_name] = original_df
+        year_col_df[df_name] = transposed_df
+        
+        # Printing each dataframe and its transpose 
+        print(f"Original DataFrame of '{df_name}':")
+        print(original_df)
+        print(f"Transposed DataFrame of '{df_name}':")
+        print(transposed_df)
+        
+        # Saving each of them into new dataframes 
+        globals()[f"{df_name}_orig"] = original_df
+        globals()[f"{df_name}_trans"] = transposed_df
+    
     
     # selecting countries 
     global selected_countries 
-    
     selected_countries = ['Bangladesh', 'China', 'United Kingdom', 'Pakistan', 
                           'Netherlands', 'United States', 'Portugal', 'South Asia', 'Qatar', 
                           'South Africa', 'Zimbabwe']
     
     # Selecting years
     global selected_years
-    
     selected_years = [str(year) for year in range(start_year , end_year + 1, 2)] 
     
-    # Calling the function to apply describe method on indicators 
-    summary_statistics(elec_access_trans)
+    """
+    # Creating a list of all the dataframes
+    dataframes = {
+        "Electricity_access" : elec_access_trans, 
+        "Electric_power_consume" : elp_consume_trans, 
+        "Energy_use" : energy_use_trans, 
+        "CO2_emission" : co2_emission_trans
+    }
     
-    # calling the statistical methods function
-    stats_methods(elec_access_trans)
+    """
+    # Iterate through each dataframe to obtain the results of each method and store in dictionaries
+    summary_resullts = {}
+    stats_results ={}
     
+    for name, df in transposed_df.items():
+        # Selecting the data from each dataframe
+        selected_data = df.loc[selected_years, selected_countries]
+        
+        # Giving the variable numeric values to apply metjods on it as it is an object 
+        selected_data = selected_data.apply(pd.to_numeric, errors='coerce')
+        
+        # Calling the function for obtaining summary of each indicators 
+        summary_of_data = summary_statistics(selected_data)
+        summary_resullts[name] = {"Summary" : summary_of_data}
+        
+        # Calling the function to get the skewness and kurtosis 
+        skewness, kurtosis = stats_methods(selected_data)
+        stats_results[name] = {"Skewness" : skewness, "Kurtosis" : kurtosis}
+    
+    # Printing the results of each indicator:
+    for name, values in summary_resullts.items():
+        print(f"{name} Summary: {values['Summary']}")
+        print("\n")
+
+    for name, values in stats_results.items():
+       print(f"{name} Skewness: {values['Skewness']}")
+       print("\n")
+       print(f"{name} Kurtosis: {values['Kurtosis']}")
+       print("\n")
+        
+    """ 
     # titles for the line plot
     epc_title = "Electric Power Consumption(KWh per capita)"
     ela_title = "Access to Electricity(% of population)"
@@ -266,7 +312,7 @@ def main():
     # calling the function for bar plots and passing arguments
     bar_plot(energy_use_data, egu_title)
     bar_plot(co2_emission_data, co2_title)
-
+    """
 
 
 
