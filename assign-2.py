@@ -61,34 +61,35 @@ def read_data(filename):
     
     # Drop the unnecessary columns in the data 
     data.drop(columns = ['Country Code', 'Indicator Name', 'Indicator Code'], inplace=True)
+    country_col_df = data
     
     # taking the transpose
-    transposed_data = data.T
+    years_col_df = data.T
     
     # setting the header 
-    transposed_data.columns = transposed_data.iloc[0]
-    transposed_data = transposed_data[1:]
+    years_col_df.columns = years_col_df.iloc[0]
+    years_col_df = years_col_df[1:]
     
     # reset index for making years as columns
-    transposed_data = transposed_data.reset_index()
-    transposed_data = transposed_data.rename(columns={'index': 'Year'})
+    years_col_df = years_col_df.reset_index()
+    years_col_df = years_col_df.rename(columns={'index': 'Year'})
     
     # setting years as index
-    transposed_data.set_index('Year', inplace = True)
+    years_col_df.set_index('Year', inplace = True)
     
     # removing empty rows
-    transposed_data.dropna(axis = 0, how = 'all', inplace = True)
+    years_col_df.dropna(axis = 0, how = 'all', inplace = True)
     
     # removing empty columns
-    transposed_data.dropna(axis = 1, how = 'all', inplace = True)
+    years_col_df.dropna(axis = 1, how = 'all', inplace = True)
     
     # Removeing any unnecessary columns in the transpose of data
-    transposed_data = transposed_data.loc[:, ~transposed_data.columns.duplicated()]
+    years_col_df = years_col_df.loc[:, ~years_col_df.columns.duplicated()]
 
     # Removing any duplicated rows
-    transposed_data = transposed_data[~transposed_data.index.duplicated(keep='first')]
+    years_col_df = years_col_df[~years_col_df.index.duplicated(keep='first')]
    
-    return data, transposed_data
+    return country_col_df, years_col_df
 
 
 
@@ -226,14 +227,14 @@ def main():
     co2_emission_data, co2_emission_trans = read_data(co2_emission)
     """
     # Creating dictionaries for original and transposed dataframes
-    country_col_df = {}
-    year_col_df = {}
+    original_dataframes = {}
+    transposed_dataframes = {}
     
     # Iterate through dataframes and store in dictionaries
     for file, df_name in filenames.items():
         original_df, transposed_df = read_data(file)
-        country_col_df[df_name] = original_df
-        year_col_df[df_name] = transposed_df
+        original_dataframes[df_name] = original_df
+        transposed_dataframes[df_name] = transposed_df
         
         # Printing each dataframe and its transpose 
         print(f"Original DataFrame of '{df_name}':")
@@ -270,7 +271,7 @@ def main():
     summary_resullts = {}
     stats_results ={}
     
-    for name, df in transposed_df.items():
+    for name, df in transposed_dataframes.items():
         # Selecting the data from each dataframe
         selected_data = df.loc[selected_years, selected_countries]
         
