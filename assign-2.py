@@ -7,10 +7,23 @@ Created on Tue Nov 21 19:14:45 2023
 """
 
 import pandas as pd
-#import stats as stats
+import stats as stats
 import matplotlib.pyplot as plt
 
-def read_data(filename, skip):
+# giving the filenames path of choosen indicators
+elec_access = "electricity_access.csv"
+elec_power = "electric_power.csv"
+energy_use = "energy_use.csv"
+co2_emission = "CO2_emission.csv"
+
+# Creating global variables
+selected_countries = {}
+start_year = 2000
+end_year = 2014
+selected_years = {}
+
+
+def read_data(filename):
     """
     This function reads data into a pandas dataframe take transpose and 
     clean the data.
@@ -25,8 +38,9 @@ def read_data(filename, skip):
     two dataframes.
 
     """
+ 
     # read the data from the file
-    data = pd.read_csv(filename, skiprows = skip, index_col=False)
+    data = pd.read_csv(filename, skiprows = 4, index_col=False)
     
     
     # cleaning the data(removing empty rows etc.)
@@ -66,27 +80,24 @@ def read_data(filename, skip):
 
     # Removing any duplicated rows
     transposed_data = transposed_data[~transposed_data.index.duplicated(keep='first')]
-  
-    
-    """  
+   
     #seperate DataFrame for countries as columns
-    countries_columns = transposed_data.T
+    #data = transposed_data.T
     
     # removing empty rows
-    countries_columns.dropna(axis = 0, how = 'all', inplace = True)
-    """
-    
+    #data.dropna(axis = 0, how = 'all', inplace = True)
     
     print(transposed_data)
-    #print(countries_columns)
+    #print(data)
     
     #transposed_data.to_csv("transpose_file.csv")
     
-    return data, transposed_data #countries_columns
-   
-    
-# Exploring the data by applying statistical properties on it    
-def data_exploration(indicator):
+    return data, transposed_data
+
+
+
+# Obtaining the summary statistics of data by the describe method    
+def summary_statistics(data):
     """
     applies describe method on different indicators.
 
@@ -96,15 +107,43 @@ def data_exploration(indicator):
 
     Returns
     -------
-    explored data.
+    summary
 
     """
+    # Selecting data 
+    selected_data = data.loc[selected_years, selected_countries]
+    selected_data = selected_data.apply(pd.to_numeric, errors='coerce')
     
-    data_explored = indicator.describe()
-    return data_explored
+    summary_stats = selected_data.describe()
+    print(summary_stats)
     
+    return summary_stats 
 
+
+
+def stats_methods(data):
+    """
+    this function applies skewness and kurtosis methods .
+
+    Parameters
+    ----------
+    data : TYPE
+
+    Returns
+    -------
+    None.
+
+    """
+    #data.drop( = 'Year')
+    selected_data = data.loc[selected_years, selected_countries]
+    #selected_data.drop(columns = 'Year')
     
+    print("Skewness: ", stats.skew(selected_data))
+    print("Kurtosis: ", stats.kurtosis(selected_data))
+    
+    return 
+
+
 # Visualization of data by plotting different graphs on it
 def line_plot(data, title):
     """
@@ -122,20 +161,16 @@ def line_plot(data, title):
     None.
 
     """
-    # Selecting countries for plotting
-    selected_countries = ['Bangladesh', 'China', 'United Kingdom', 'Pakistan', 
-                          'Netherlands', 'United States', 'Portugal', 'South Asia', 'Qatar', 
-                          'South Africa', 'Zimbabwe']
-    
+   
     # Filter the data for selective countries and years 2000 to 2014
     filtered_data = data.loc[data['Country Name'].isin(selected_countries)]
-    filtered_data = filtered_data.set_index('Country Name').loc[:, '2000' : '2014']
+    filtered_data = filtered_data.set_index('Country Name').loc[:, str(start_year) : str(end_year)]
     
     # line-plot
     plt.figure(figsize=(8, 6))
     
-    for countries in selected_countries:
-        plt.plot(filtered_data.columns, filtered_data.loc[countries], label = countries)
+    for country in selected_countries: 
+        plt.plot(filtered_data.columns, filtered_data.loc[country], label = country)
         
     plt.xlabel('Years')
     plt.title(title)
@@ -143,7 +178,7 @@ def line_plot(data, title):
     plt.show()
     
     
-    
+
 def bar_plot(data, title):    
     """
     plots a bar plot on different data sets for selective countries and years.
@@ -160,15 +195,8 @@ def bar_plot(data, title):
     None.
 
     """
-    # Selecting countries for plotting
-    selected_countries = ['Bangladesh', 'China', 'United Kingdom', 'Pakistan', 
-                          'Netherlands', 'United States', 'Portugal', 'South Asia', 'Qatar', 
-                          'South Africa', 'Zimbabwe']
-    
-    # Selectin the years from 2000-2014
-    selected_years = [str(year) for year in range(2000, 2015, 2)] 
-    
-    # Filter the data for selective countries and years 2000 to 2014
+   
+    # Filter the data for selective countries and years 
     filtered_data = data[data['Country Name'].isin(selected_countries)][['Country Name'] + selected_years]
     filtered_data.set_index('Country Name', inplace = True)
     
@@ -200,19 +228,28 @@ def main():
     None.
 
     """
+    elec_access_data, elec_access_trans = read_data(elec_access)
+    elp_consume_data, elp_consume_trans = read_data(elec_power)
+    energy_use_data, energy_use_trans = read_data(energy_use)
+    co2_emission_data, co2_emission_trans = read_data(co2_emission)
     
-    # giving the filenames path of data sets
-    elec_access = "electricity_access.csv"
-    elec_power = "electric_power.csv"
-    energy_use = "energy_use.csv"
-    co2_emission = "CO2_emission.csv"
+    # selecting countries 
+    global selected_countries 
     
+    selected_countries = ['Bangladesh', 'China', 'United Kingdom', 'Pakistan', 
+                          'Netherlands', 'United States', 'Portugal', 'South Asia', 'Qatar', 
+                          'South Africa', 'Zimbabwe']
     
-    # calling the function to read the data
-    elec_access_data, elec_access_trans = read_data(elec_access, 4)
-    elp_consume_data, elp_consume_trans = read_data(elec_power, 4)
-    energy_use_data, energy_use_trans = read_data(energy_use, 4)
-    co2_emission_data, co2_emission_trans = read_data(co2_emission, 4)
+    # Selecting years
+    global selected_years
+    
+    selected_years = [str(year) for year in range(start_year , end_year + 1, 2)] 
+    
+    # Calling the function to apply describe method on indicators 
+    summary_statistics(elec_access_trans)
+    
+    # calling the statistical methods function
+    stats_methods(elec_access_trans)
     
     # titles for the line plot
     epc_title = "Electric Power Consumption(KWh per capita)"
@@ -223,16 +260,17 @@ def main():
     line_plot(elec_access_data, ela_title)
     
     # titles for the bar plot
-    egu_title = "Energy Use(Kg of oil equivalent per capita)"
+    egu_title = "Overall Energy Use(Kg)"
     co2_title = "CO2 Emission(kt)"
     
     # calling the function for bar plots and passing arguments
     bar_plot(energy_use_data, egu_title)
     bar_plot(co2_emission_data, co2_title)
 
-    
-    
-    
+
+
+
+
 if __name__ == "__main__":
     main()
     
