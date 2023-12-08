@@ -11,18 +11,12 @@ import stats as stats
 import matplotlib.pyplot as plt
 
 # giving the filenames path of choosen indicators
-"""
+
 elec_access = "electricity_access.csv"
 elec_power = "electric_power.csv"
 energy_use = "energy_use.csv"
 co2_emission = "CO2_emission.csv"
-"""
-filenames = {
-    "electricity_access.csv" : "elec_access",
-    "electric_power.csv" :  "elec_power",
-    "energy_use.csv" : "energy_use",
-    "CO2_emission.csv" : "co2_emission"
-    }
+
     
 # Creating global variables
 selected_countries = {}
@@ -89,7 +83,7 @@ def read_data(filename):
     # Removing any duplicated rows
     years_col_df = years_col_df[~years_col_df.index.duplicated(keep='first')]
    
-    return country_col_df, years_col_df
+    return country_col_df , years_col_df
 
 
 
@@ -157,7 +151,7 @@ def line_plot(data, title):
     # Filter the data for selective countries and years 2000 to 2014
     filtered_data = data.loc[data['Country Name'].isin(selected_countries)]
     filtered_data = filtered_data.set_index('Country Name').loc[:, str(start_year) : str(end_year)]
-    
+   
     # line-plot
     plt.figure(figsize=(8, 6))
     
@@ -220,31 +214,11 @@ def main():
     None.
 
     """
-    """
+    # Callig the read function and saving each dataframes into variables
     elec_access_data, elec_access_trans = read_data(elec_access)
     elp_consume_data, elp_consume_trans = read_data(elec_power)
     energy_use_data, energy_use_trans = read_data(energy_use)
     co2_emission_data, co2_emission_trans = read_data(co2_emission)
-    """
-    # Creating dictionaries for original and transposed dataframes
-    original_dataframes = {}
-    transposed_dataframes = {}
-    
-    # Iterate through dataframes and store in dictionaries
-    for file, df_name in filenames.items():
-        original_df, transposed_df = read_data(file)
-        original_dataframes[df_name] = original_df
-        transposed_dataframes[df_name] = transposed_df
-        
-        # Printing each dataframe and its transpose 
-        print(f"Original DataFrame of '{df_name}':")
-        print(original_df)
-        print(f"Transposed DataFrame of '{df_name}':")
-        print(transposed_df)
-        
-        # Saving each of them into new dataframes 
-        globals()[f"{df_name}_orig"] = original_df
-        globals()[f"{df_name}_trans"] = transposed_df
     
     
     # selecting countries 
@@ -257,7 +231,7 @@ def main():
     global selected_years
     selected_years = [str(year) for year in range(start_year , end_year + 1, 2)] 
     
-    """
+    
     # Creating a list of all the dataframes
     dataframes = {
         "Electricity_access" : elec_access_trans, 
@@ -266,12 +240,12 @@ def main():
         "CO2_emission" : co2_emission_trans
     }
     
-    """
+    
     # Iterate through each dataframe to obtain the results of each method and store in dictionaries
     summary_resullts = {}
     stats_results ={}
     
-    for name, df in transposed_dataframes.items():
+    for name, df in dataframes.items():
         # Selecting the data from each dataframe
         selected_data = df.loc[selected_years, selected_countries]
         
@@ -297,7 +271,7 @@ def main():
        print(f"{name} Kurtosis: {values['Kurtosis']}")
        print("\n")
         
-    """ 
+    
     # titles for the line plot
     epc_title = "Electric Power Consumption(KWh per capita)"
     ela_title = "Access to Electricity(% of population)"
@@ -313,7 +287,7 @@ def main():
     # calling the function for bar plots and passing arguments
     bar_plot(energy_use_data, egu_title)
     bar_plot(co2_emission_data, co2_title)
-    """
+    
 
 
 
