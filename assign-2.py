@@ -8,6 +8,7 @@ Created on Tue Nov 21 19:14:45 2023
 
 import pandas as pd
 import stats as stats
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 # giving the filenames path of choosen indicators
@@ -57,6 +58,8 @@ def read_data(filename):
     data.drop(columns = ['Country Code', 'Indicator Name', 'Indicator Code'], inplace=True)
     country_col_df = data
     
+    print(country_col_df)
+    
     # taking the transpose
     years_col_df = data.T
     
@@ -82,6 +85,8 @@ def read_data(filename):
 
     # Removing any duplicated rows
     years_col_df = years_col_df[~years_col_df.index.duplicated(keep='first')]
+    
+    print(years_col_df)
    
     return country_col_df , years_col_df
 
@@ -137,7 +142,7 @@ def line_plot(data, title):
 
     Parameters
     ----------
-    data : csv
+    data : pandas dataframe
         world bank data of different indicators.
     title : str
         title of different line-plot graphs.    
@@ -171,7 +176,7 @@ def bar_plot(data, title):
 
     Parameters
     ----------
-    data : csv
+    data : pandas dataframe
         world bank data of different indicators.
     title : str
         title of different line-plot graphs.
@@ -187,7 +192,7 @@ def bar_plot(data, title):
     filtered_data.set_index('Country Name', inplace = True)
     
     # Bar plot
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize = (10, 6))
     
    # x-axis ticks for the countries
     x = range(len(selected_countries))  
@@ -204,7 +209,37 @@ def bar_plot(data, title):
     plt.show()
     
     
+def heat_map(indicators, country_name, set_color):
+    """
+    generate a heat map for different countries to show the correlation between indicators
+
+    Parameters
+    ----------
+    indicators : pandas dataframes
+        world bank data of different indicators.
+    country_name : str
+       
+    Returns
+    -------
+    None.
+
+    """
+    # Fetching data for the specified country from each indicator
+    country_data = {}
+    for indicator, df in indicators.items():
+        country_df = df[df['Country Name'] == country_name].T
+        country_df.columns = [indicator]
+        country_data[indicator] = country_df.iloc[1:]
     
+    # Combine data for all indicators
+    country_combined = pd.concat(country_data.values(), axis=1)
+    
+    # Plotting the correlogram heatmap
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(country_combined.corr(), annot = True, cmap = set_color , square = True)
+    plt.title(f'{country_name}')
+    plt.show()
+
 def main():
     """
     A main function calling other functions.
@@ -232,12 +267,20 @@ def main():
     selected_years = [str(year) for year in range(start_year , end_year + 1, 2)] 
     
     
-    # Creating a list of all the dataframes
-    dataframes = {
+    # Creating a list of all the transformed dataframes
+    trans_dataframes = {
         "Electricity_access" : elec_access_trans, 
         "Electric_power_consume" : elp_consume_trans, 
         "Energy_use" : energy_use_trans, 
         "CO2_emission" : co2_emission_trans
+    }
+    
+    # Creating a list of all the original dataframes
+    org_dataframes = {
+        "Electricity_access" : elec_access_data, 
+        "Electric_power_consume" : elp_consume_data, 
+        "Energy_use" : energy_use_data, 
+        "CO2_emission" : co2_emission_data
     }
     
     
@@ -245,7 +288,7 @@ def main():
     summary_resullts = {}
     stats_results ={}
     
-    for name, df in dataframes.items():
+    for name, df in trans_dataframes.items():
         # Selecting the data from each dataframe
         selected_data = df.loc[selected_years, selected_countries]
         
@@ -288,6 +331,14 @@ def main():
     bar_plot(energy_use_data, egu_title)
     bar_plot(co2_emission_data, co2_title)
     
+    #print(dataframes['Electricity_access'].index)
+    print(elec_access_data.index)
+    
+    # creating a list of all the indicators
+    #indicator_list = [elec_access_data, elp_consume_data, energy_use_data, co2_emission_data]
+    
+    # Calling the function for generating heat map
+    heat_map(org_dataframes, "China", 'cubehelix')
 
 
 
