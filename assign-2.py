@@ -12,7 +12,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # giving the filenames path of choosen indicators
-
 elec_access = "electricity_access.csv"
 elec_power = "electric_power.csv"
 energy_use = "energy_use.csv"
@@ -90,6 +89,37 @@ def read_data(filename):
    
     return country_col_df , years_col_df
 
+
+# Using a groupby() method to group the desired data 
+def groupby_selected_data(dataframes):
+    """
+    This function grouped the desired data of each indicators 
+
+    Parameters
+    ----------
+    dataframes : python dataframe
+        dataframes of each indicators.
+
+    Returns
+    -------
+    grouped data.
+
+    """
+
+    # Iterate through each indicator dataframe and perform groupby
+    for indicator_name, df in dataframes.items():
+        # Filter the dataframe based on selected countries and years
+        filtered_df = df.loc[selected_years, selected_countries]
+
+        # Perform groupby operation on the filtered_df
+        grouped_data = filtered_df.groupby(level=0, axis=1).mean()  # Grouping by country name and finding mean
+
+        # Display the grouped data
+        print(f"Grouped {indicator_name} data for selected countries:")
+        print(grouped_data)
+        print("=" * 50)
+        
+    return grouped_data
 
 
 # Obtaining the summary statistics of data by the describe method    
@@ -229,16 +259,22 @@ def heat_map(indicators, country_name, set_color):
     for indicator, df in indicators.items():
         country_df = df[df['Country Name'] == country_name].T
         country_df.columns = [indicator]
-        country_data[indicator] = country_df.iloc[1:]
+        country_data[indicator] = country_df.loc[str(start_year) : str(end_year)]
     
     # Combine data for all indicators
-    country_combined = pd.concat(country_data.values(), axis=1)
+    country_combined_data = pd.concat(country_data.values(), axis=1)
+    print(country_combined_data)
+    
+    # calculating the correlation 
+    corr_data = country_combined_data.corr()
+    print(corr_data)
     
     # Plotting the correlogram heatmap
     plt.figure(figsize=(10, 8))
-    sns.heatmap(country_combined.corr(), annot = True, cmap = set_color , square = True)
+    sns.heatmap(corr_data, annot = True, cmap = set_color , square = True)
     plt.title(f'{country_name}')
     plt.show()
+
 
 def main():
     """
@@ -270,7 +306,7 @@ def main():
     # Creating a list of all the transformed dataframes
     trans_dataframes = {
         "Electricity_access" : elec_access_trans, 
-        "Electric_power_consume" : elp_consume_trans, 
+        "Electricity_consume" : elp_consume_trans, 
         "Energy_use" : energy_use_trans, 
         "CO2_emission" : co2_emission_trans
     }
@@ -278,19 +314,19 @@ def main():
     # Creating a list of all the original dataframes
     org_dataframes = {
         "Electricity_access" : elec_access_data, 
-        "Electric_power_consume" : elp_consume_data, 
+        "Electricity_consume" : elp_consume_data, 
         "Energy_use" : energy_use_data, 
         "CO2_emission" : co2_emission_data
     }
     
+    # Calling the function to group selected data of all the indicators  
+    selected_data = groupby_selected_data(trans_dataframes)
     
     # Iterate through each dataframe to obtain the results of each method and store in dictionaries
     summary_resullts = {}
     stats_results ={}
     
     for name, df in trans_dataframes.items():
-        # Selecting the data from each dataframe
-        selected_data = df.loc[selected_years, selected_countries]
         
         # Giving the variable numeric values to apply metjods on it as it is an object 
         selected_data = selected_data.apply(pd.to_numeric, errors='coerce')
@@ -333,9 +369,6 @@ def main():
     
     #print(dataframes['Electricity_access'].index)
     print(elec_access_data.index)
-    
-    # creating a list of all the indicators
-    #indicator_list = [elec_access_data, elp_consume_data, energy_use_data, co2_emission_data]
     
     # Calling the function for generating heat map
     heat_map(org_dataframes, "China", 'cubehelix')
