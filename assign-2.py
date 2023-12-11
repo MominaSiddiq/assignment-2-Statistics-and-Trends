@@ -102,7 +102,7 @@ def groupby_selected_data(dataframes):
 
     Returns
     -------
-    grouped data.
+    grouped data: python dataframes.
 
     """
 
