@@ -16,6 +16,7 @@ elec_access = "electricity_access.csv"
 elec_power = "electric_power.csv"
 energy_use = "energy_use.csv"
 co2_emission = "CO2_emission.csv"
+urban_popul = "urban_population.csv"
 
     
 # Creating global variables
@@ -188,14 +189,30 @@ def line_plot(data, title):
     filtered_data = filtered_data.set_index('Country Name').loc[:, str(start_year) : str(end_year)]
    
     # line-plot
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(10, 8))
     
     for country in selected_countries: 
         plt.plot(filtered_data.columns, filtered_data.loc[country], label = country)
         
-    plt.xlabel('Years')
-    plt.title(title)
-    plt.legend(title='Countries', bbox_to_anchor=(1.05, 1), loc='upper left')  
+    # Get the current axes
+    ax = plt.gca()
+
+    # Set border color and width for each spine (top, bottom, left, right)
+    ax.spines['top'].set_color('black')
+    ax.spines['top'].set_linewidth(1)
+
+    ax.spines['bottom'].set_color('black')
+    ax.spines['bottom'].set_linewidth(1)
+
+    ax.spines['left'].set_color('black')
+    ax.spines['left'].set_linewidth(1)
+
+    ax.spines['right'].set_color('black')
+    ax.spines['right'].set_linewidth(1)
+    
+    plt.xlabel('Years', fontsize=16)
+    plt.title(title, fontsize=16)
+    plt.legend(title='Countries', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='large')  
     plt.show()
     
     
@@ -222,7 +239,7 @@ def bar_plot(data, title):
     filtered_data.set_index('Country Name', inplace = True)
     
     # Bar plot
-    plt.figure(figsize = (10, 6))
+    plt.figure(figsize = (10, 8))
     
    # x-axis ticks for the countries
     x = range(len(selected_countries))  
@@ -232,10 +249,10 @@ def bar_plot(data, title):
         plt.bar([pos + i * bar_width for pos in x], filtered_data[year], width=bar_width, label=year, edgecolor = 'black')
 
         
-    plt.xlabel('Countries')
-    plt.title(title)
+    plt.xlabel('Countries', fontsize=16)
+    plt.title(title, fontsize=16)
     plt.xticks([pos + (len(selected_years) - 1) * bar_width / 2 for pos in x], selected_countries, rotation = 45, ha = 'right')
-    plt.legend(loc='upper left')  
+    plt.legend(loc='upper left', fontsize='large')  
     plt.show()
     
     
@@ -271,8 +288,8 @@ def heat_map(indicators, country_name, set_color):
     
     # Plotting the correlogram heatmap
     plt.figure(figsize=(10, 8))
-    sns.heatmap(corr_data, annot = True, cmap = set_color , square = True)
-    plt.title(f'{country_name}')
+    sns.heatmap(corr_data, annot = True, cmap = set_color , square = True, center=0, vmax=1, vmin=-1)
+    plt.title(f'{country_name}', fontsize=16)
     plt.show()
 
 
@@ -290,6 +307,7 @@ def main():
     elp_consume_data, elp_consume_trans = read_data(elec_power)
     energy_use_data, energy_use_trans = read_data(energy_use)
     co2_emission_data, co2_emission_trans = read_data(co2_emission)
+    urban_pop_data, urban_pop_trans = read_data(urban_popul)
     
     
     # selecting countries 
@@ -308,7 +326,8 @@ def main():
         "Electricity_access" : elec_access_trans, 
         "Electricity_consume" : elp_consume_trans, 
         "Energy_use" : energy_use_trans, 
-        "CO2_emission" : co2_emission_trans
+        "CO2_emission" : co2_emission_trans,
+        "Urban_pop" : urban_pop_trans
     }
     
     # Creating a list of all the original dataframes
@@ -316,7 +335,8 @@ def main():
         "Electricity_access" : elec_access_data, 
         "Electricity_consume" : elp_consume_data, 
         "Energy_use" : energy_use_data, 
-        "CO2_emission" : co2_emission_data
+        "CO2_emission" : co2_emission_data,
+        "Urban_pop" : urban_pop_data
     }
     
     # Calling the function to group selected data of all the indicators  
@@ -351,27 +371,30 @@ def main():
        print("\n")
         
     
-    # titles for the line plot
-    epc_title = "Electric Power Consumption(KWh per capita)"
-    ela_title = "Access to Electricity(% of population)"
+    # titles for the plots
+    epc_title = "Electric Power Consumption (KWh per capita)"
+    ela_title = "Access of Electricity (% of population)"
+    egu_title = "Overall Energy Use (Kg)"
+    co2_title = "CO2 Emission (kt)"
     
     # calling the function for line-plots and passing arguments
     line_plot(elp_consume_data, epc_title)
     line_plot(elec_access_data, ela_title)
-    
-    # titles for the bar plot
-    egu_title = "Overall Energy Use(Kg)"
-    co2_title = "CO2 Emission(kt)"
+    line_plot(energy_use_data,egu_title)
+    line_plot(co2_emission_data, co2_title)
     
     # calling the function for bar plots and passing arguments
     bar_plot(energy_use_data, egu_title)
     bar_plot(co2_emission_data, co2_title)
+    bar_plot(elp_consume_data, epc_title)
+    bar_plot(elec_access_data, ela_title)    
     
     #print(dataframes['Electricity_access'].index)
     print(elec_access_data.index)
     
     # Calling the function for generating heat map
-    heat_map(org_dataframes, "China", 'cubehelix')
+    heat_map(org_dataframes, "Qatar", 'cubehelix')
+    heat_map(org_dataframes, "Zimbabwe", 'cubehelix')
 
 
 
