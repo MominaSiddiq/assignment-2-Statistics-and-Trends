@@ -17,7 +17,6 @@ elec_power = "electric_power.csv"
 energy_use = "energy_use.csv"
 co2_emission = "CO2_emission.csv"
 
-
 # Creating global variables
 selected_countries = {}
 start_year = 2000
