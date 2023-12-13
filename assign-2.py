@@ -373,10 +373,10 @@ def main():
     bar_plot(energy_use_data, egu_title)
     bar_plot(co2_emission_data, co2_title)
     bar_plot(elp_consume_data, epc_title)
-    bar_plot(elec_access_data, ela_title)
 
     # Calling the function for generating heat map
     heat_map(org_dataframes, "Qatar")
+    heat_map(org_dataframes, "South Africa")
     heat_map(org_dataframes, "Zimbabwe")
 
 
